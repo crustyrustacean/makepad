@@ -159,6 +159,19 @@ impl ShaderOutput {
         if self.hlsl_needs_tex_size {
             writeln!(out, "float2 _mpTexSize2D(Texture2D tex) {{ uint w, h; tex.GetDimensions(w, h); return float2(w, h); }}").ok();
         }
+
+        // Packed vertex attribute unpackers: two f16s / four unorm8s
+        // bitcast into one f32 geometry slot (packed map vertex format).
+        // HLSL's f16tof32 intrinsic unpacks the low 16 bits of a uint into
+        // a float, so we call it twice with a shift to get both halves.
+        writeln!(out, "float2 unpack2f16(float x) {{").ok();
+        writeln!(out, "    uint u = asuint(x);").ok();
+        writeln!(out, "    return float2(f16tof32(u), f16tof32(u >> 16));").ok();
+        writeln!(out, "}}").ok();
+        writeln!(out, "float4 unpack4u8(float x) {{").ok();
+        writeln!(out, "    uint u = asuint(x);").ok();
+        writeln!(out, "    return float4(float(u & 0xff), float((u >> 8) & 0xff), float((u >> 16) & 0xff), float((u >> 24) & 0xff)) * (1.0 / 255.0);").ok();
+        writeln!(out, "}}").ok();
     }
 
     pub fn hlsl_create_instance_struct(&self, vm: &ScriptVm, out: &mut String) {

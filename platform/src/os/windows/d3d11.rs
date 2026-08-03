@@ -2178,7 +2178,7 @@ fn shader_cache_dir() -> Option<&'static std::path::Path> {
 // would otherwise leave stale bytecode on disk that no longer matches what
 // the runtime expects.
 fn hlsl_cache_key(hlsl: &str) -> u64 {
-    const CACHE_KEY_VERSION: u8 = 2;
+    const CACHE_KEY_VERSION: u8 = 3;
     let mut hash: u64 = 0xcbf29ce484222325;
     hash ^= CACHE_KEY_VERSION as u64;
     hash = hash.wrapping_mul(0x100000001b3);

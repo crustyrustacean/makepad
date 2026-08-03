@@ -1085,6 +1085,8 @@ impl ShaderBackend {
                 id_lut!(frac);
                 id_lut!(lerp);
                 id_lut!(discard_fragment);
+                id_lut!(unpack2f16);
+                id_lut!(unpack4u8);
             }
             Self::Glsl => {
                 id_lut!(float);
