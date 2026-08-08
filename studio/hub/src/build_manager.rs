@@ -4,9 +4,12 @@ use makepad_studio_protocol::hub_protocol::{BuildInfo, QueryId};
 use makepad_studio_protocol::AppToStudio;
 use std::collections::HashMap;
 use std::env;
+#[cfg(unix)]
 use std::fs;
 use std::io::{self, BufRead, BufReader, Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
+#[cfg(unix)]
+use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -547,12 +550,14 @@ fn spawn_waiter(
     });
 }
 
+#[cfg(unix)]
 #[derive(Debug, Default, PartialEq, Eq)]
 struct CargoManifestTargets {
     package_name: Option<String>,
     bin_names: Vec<String>,
 }
 
+#[cfg(unix)]
 impl CargoManifestTargets {
     fn default_binary_name(&self) -> Option<String> {
         match self.bin_names.as_slice() {
@@ -567,6 +572,7 @@ impl CargoManifestTargets {
     }
 }
 
+#[cfg(unix)]
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum CargoManifestSection {
     Other,
@@ -604,6 +610,7 @@ fn parse_cargo_flag_value(args: &[String], flags: &[&str]) -> Option<String> {
     None
 }
 
+#[cfg(unix)]
 fn parse_manifest_targets(manifest: &str) -> CargoManifestTargets {
     let mut targets = CargoManifestTargets::default();
     let mut section = CargoManifestSection::Other;
@@ -638,6 +645,7 @@ fn parse_manifest_targets(manifest: &str) -> CargoManifestTargets {
     targets
 }
 
+#[cfg(unix)]
 fn parse_manifest_string_value(line: &str, key: &str) -> Option<String> {
     let (lhs, rhs) = line.split_once('=')?;
     if lhs.trim() != key {
@@ -649,12 +657,14 @@ fn parse_manifest_string_value(line: &str, key: &str) -> Option<String> {
     Some(value[..end].to_string())
 }
 
+#[cfg(unix)]
 fn read_manifest_targets(cwd: &Path) -> Option<CargoManifestTargets> {
     let manifest_path = cwd.join("Cargo.toml");
     let manifest = fs::read_to_string(manifest_path).ok()?;
     Some(parse_manifest_targets(&manifest))
 }
 
+#[cfg(unix)]
 fn resolve_direct_stdio_binary_name(cwd: &Path, args: &[String]) -> Option<String> {
     if let Some(bin) = parse_bin_arg(args) {
         return Some(bin);
@@ -669,6 +679,7 @@ fn resolve_direct_stdio_binary_name(cwd: &Path, args: &[String]) -> Option<Strin
     targets.default_binary_name()
 }
 
+#[cfg(unix)]
 fn should_use_direct_stdio_run(args: &[String], env: &HashMap<String, String>) -> bool {
     env.get("MAKEPAD").is_some_and(|value| value == "headless")
         && args.first().is_some_and(|arg| arg == "run")
@@ -729,6 +740,7 @@ fn shell_escape(value: &str) -> String {
 mod tests {
     use super::*;
 
+    #[cfg(unix)]
     #[test]
     fn parse_manifest_targets_reads_single_bin_name() {
         let targets = parse_manifest_targets(
